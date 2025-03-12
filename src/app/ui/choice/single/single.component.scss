@@ -1,0 +1,40 @@
+:root {
+  --color-primary: blueviolet;
+}
+.single-choice {
+  @apply flex w-full;
+
+  &-radio {
+    @apply hidden;
+
+    &:checked {
+      & + label {
+        background-color: var(--color-primary);
+        color: var(--color-primary);
+
+      }
+
+      & + label::before {
+        border: 1px solid var(--color-primary);
+      }
+    }
+  }
+
+  &-label {
+    @apply w-full rounded-md flex items-center gap-2 font-bold;
+    position: relative;
+    padding: 1.25rem;
+    border: 2px solid var(--color-primary);
+    color: var(--color-primary);
+
+
+    &::before {
+      @apply rounded-full;
+      content: '';
+      display: block;
+      width: 18px;
+      height: 18px;
+      border: 1px solid var(--color-primary);
+    }
+  }
+}

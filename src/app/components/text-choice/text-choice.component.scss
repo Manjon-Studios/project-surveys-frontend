@@ -1,0 +1,10 @@
+.ui-textarea {
+  @apply w-full resize-y min-h-28 border-b-2 shadow-md px-2 pb-4 pt-2 focus:outline-none rounded-tl-md rounded-tr-md;
+  border-color: rgb(from var(--single-choice-bg) r g b / 50%);
+
+  &:focus {
+    border: none !important;
+    border-bottom: 2px solid var(--single-choice-bg) !important;
+    box-shadow: 0px 0px 15px rgb(from var(--single-choice-bg) r g b / 25%) !important;
+  }
+}

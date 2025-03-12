@@ -1,0 +1,152 @@
+@use "sass:math";
+
+$context: 16px;
+
+@function em($pixels, $context: $context) {
+    @return 1em * math.div($pixels, $context);
+}
+
+@mixin hidden() {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    -webkit-clip-path: inset(50%);
+    clip-path: inset(50%);
+    border: 0;
+}
+
+:root {
+    --ui-checkbox-border-default: var(--ui-custom-checkbox-border-default,
+            var(--grayscale-spacer));
+    --ui-checkbox-border-checked: var(--ui-custom-checkbox-border-checked,
+            var(--corporate-purple));
+    --ui-checkbox-border-disabled: var(--ui-custom-checkbox-border-disabled,
+            var(--grayscale-spacer-light));
+    --ui-checkbox-bg-default: var(--ui-custom-checkbox-bg-default,
+            var(--grayscale-white));
+    --ui-checkbox-bg-checked: var(--ui-custom-checkbox-bg-checked,
+            var(--corporate-purple));
+    --ui-checkbox-bg-disabled: var(--ui-custom-checkbox-bg-disabled,
+            var(--grayscale-disabled));
+    --ui-checkbox-svg-stroke: var(--ui-custom-checkbox-svg-stroke,
+            var(--grayscale-white));
+    --ui-checkbox-outline-width-default: var(--ui-custom-checkbox-outline-width-default,
+        #{em(1px)});
+    --ui-checkbox-outline-style: var(--ui-custom-checkbox-outline-style,
+            solid);
+    --ui-checkbox-outline-color-default: var(--ui-custom-checkbox-outline-color,
+            transparent);
+    --ui-checkbox-outline-color-active: var(--ui-custom-checkbox-outline-color-active,
+            var(--corporate-purple));
+    --ui-checkbox-outline-offset: var(--ui-custom-checkbox-outline-offset,
+        #{em(2px)});
+    --ui-checkbox-label-color: var(--ui-custom-checkbox-label-color,
+            var(--grayscale-black));
+    --ui-checkbox-label-color-disabled: var(--ui-custom-checkbox-label-color-disabled,
+            var(--grayscale-disabled));
+    --ui-checkbox-label-font-weight: var(--ui-custom-checkbox-label-font-weight,
+            400);
+    --ui-checkbox-label-font-size: var(--ui-custom-checkbox-label-font-size,
+        #{em(16px)});
+    --ui-checkbox-label-line-height: var(--ui-custom-checkbox-label-line-height,
+            148%);
+    --ui-checkbox-spacing-left: var(--ui-custom-checkbox-spacing-left,
+        #{calc(em(18px) + (em(12px) / 2))});
+}
+
+.ui-checkbox {
+    --checkbox-border-color: var(--ui-checkbox-border-default, #505050);
+    --checkbox-bg: var(--ui-checkbox-bg-default, white);
+    --checkbox-label-color: var(--ui-checkbox-label-color, #505050);
+    --checkbox-label-font-weight: var(--ui-checkbox-label-font-weight);
+    --checkbox-label-font-size: var(--ui-checkbox-label-font-size);
+    --checkbox-label-line-height: var(--ui-checkbox-label-line-height, );
+    --checkbox-svg-stroke: var(--ui-checkbox-svg-stroke, white);
+    --checkbox-outline-width: var(--ui-checkbox-outline-width-default);
+    --checkbox-outline-style: var(--ui-checkbox-outline-style);
+    --checkbox-outline-color: var(--ui-checkbox-outline-color-default);
+    --checkbox-outline-offset: var(--ui-checkbox-outline-offset);
+    --checkbox-spacing-left: var(--ui-checkbox-spacing-left);
+
+    &-label {
+        position: relative;
+        padding-left: var(--checkbox-spacing-left);
+        font-weight: var(--checkbox-label-font-weight);
+        font-size: var(--checkbox-label-font-size);
+        line-height: var(--checkbox-label-line-height);
+        color: var(--checkbox-label-color);
+        user-select: none;
+        cursor: pointer;
+
+        &--not-text {
+            padding-left: 0;
+        }
+
+        svg {
+            position: absolute;
+            left: em(2.5px);
+            top: em(calc(12px / 2.75));
+            width: em(12px);
+            height: em(12px);
+            pointer-events: none;
+
+            path {
+                stroke-dashoffset: em(111px);
+                stroke-dasharray: em(111px);
+                stroke: var(--checkbox-svg-stroke);
+                transition: all 0.25s ease-out;
+
+                @media (prefers-reduced-motion: reduce) {
+                    transition: none;
+                }
+
+            }
+        }
+
+        &::before {
+            content: '';
+            width: em(18px);
+            height: em(18px);
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            margin: auto;
+            top: 0;
+            border: em(1px) solid var(--checkbox-border-color);
+            background-color: var(--checkbox-bg);
+            border-radius: em(4px);
+            transition: all 0.25s ease-out;
+            outline-width: var(--checkbox-outline-width);
+            outline-style: var(--checkbox-outline-style);
+            outline-color: var(--checkbox-outline-color);
+            outline-offset: var(--checkbox-outline-offset);
+
+            @media (prefers-reduced-motion: reduce) {
+                transition: none;
+            }
+        }
+
+      &:has(input:focus-within),
+      &:has(input:focus){
+        --checkbox-outline-color: var(--single-choice-bg);
+      }
+
+      &:has(input:checked):is(input:disabled) &::before,
+      &:has(input:checked):is(input:disabled) &::after,{
+        --checkbox-bg: var(--ui-checkbox-bg-disabled);
+        --checkbox-border-color: var(--ui-checkbox-border-disabled);
+      }
+
+      &:has(input:checked) {
+        --checkbox-border-color: var(--single-choice-bg);
+        --checkbox-bg: var(--single-choice-bg);
+      }
+      &:has(input:checked) svg path {
+        stroke-dashoffset: 0;
+      }
+    }
+}

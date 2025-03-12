@@ -1,0 +1,19 @@
+<div class="m-auto p-4 border-b-[1px]">
+  <div class="flex flex-col pb-4">
+    <h3 class="text-xl font-bold ">
+      {{ question.question }}
+      <sup *ngIf="question.isRequired" class="text-red-600">*</sup>
+    </h3>
+    <p *ngIf="question.description" class="text-sm opacity-75">{{ question.description }}</p>
+  </div>
+  <ng-container *ngIf="component">
+    <ng-container *ngComponentOutlet="component; injector: injector"></ng-container>
+  </ng-container>
+
+  <div
+    *ngIf="formControl.touched && formControl.invalid"
+    class="text-sm p-3 bg-red-500 rounded-lg text-black mt-4"
+    >
+    {{ getErrorMessage() }}
+  </div>
+</div>

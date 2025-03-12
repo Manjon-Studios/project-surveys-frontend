@@ -1,0 +1,110 @@
+<div class="w-full max-h-[100dvh] flex transition-all h-[100dvh]">
+  <div class="w-full h-full overflow-y-auto flex flex-col shadow-2xl p-4" [class.w-[45%]]="rolSelected"
+    style="transition: all ease-in-out 0.1s">
+    <button class="fas fa-times self-end w-6 h-6 rounded-full border-2 border-black" (click)="onClose()"></button>
+    <form [formGroup]="formGroup" class="h-fit p-4 shadow-md rounded-sm" (submit)="onSubmit($event)">
+      @if (roles) {
+      <div class="flex flex-col gap-1 mb-4">
+        <label for="email" class="text-xs">Roles:</label>
+        <select formControlName="roles" class="p-2 shadow-md rounded-md border-[1px] border-gray-200">
+          @for (rol of roles; track $index) { @if (rol) {
+          <option [value]="rol.id">{{ rol.name }}</option>
+          } }
+        </select>
+      </div>
+      }
+      <div class="flex flex-col gap-4">
+        <div class="relative">
+          <div class="relative">
+            <input type="search" class="w-full p-2 shadow-md rounded-md border-[1px] border-gray-200"
+              (input)="onObservableChangeValue($event)" (focus)="showMenu = true" role="combobox"
+              aria-controls="autocomplete-default__listbox" aria-autocomplete="list" aria-activedescendant
+              [value]="permissionSelectedName ? permissionSelectedName : null" />
+          </div>
+          <!-- Lista -->
+          <ul id="autocomplete-default__listbox" [class.hidden]="!showMenu" role="listbox"
+            class="absolute p-1 top-[100%] left-0 w-full bg-white shadow-md rounded-md border-[1px] border-gray-200">
+            @if (permissionsView) { @if (permissionsView.length <= 0) { <li role="option">
+              <button tabindex="-1" disabled
+                class="w-full flex items-center justify-between p-2 rounded-md disabled:pointer-events-none hover:bg-gray-100">
+                <span class="text-sm">No data</span>
+              </button>
+              </li>
+              }@else { @for (permission of permissionsView; track $index) {
+              <li role="option" (click)="onSelectPermission(permission)">
+                <button class="w-full flex items -center justify-between p-2 rounded-md hover:bg-gray-100">
+                  {{ permission.title }}
+                  <span tabindex="-1" class="text-xs px-2 py-1 rounded-sm bg-green-200 cursor-default">
+                    <span class="text-sm font-bold">Permission</span>
+                  </span>
+                </button>
+              </li>
+              } } }
+          </ul>
+        </div>
+      </div>
+    </form>
+    {{ permissionsView | json }}
+  </div>
+  <div class="w-full h-full p-4" [class.w-[50%]]="rolSelected" [class.p-0]="!rolSelected" [class.p-4]="rolSelected"
+    [class.opacity-0]="!rolSelected">
+    <div class="w-full border-[1px] border-grey-300 shadow-md rounded-md">
+      <h3 class="text-lg font-bold border-b-2 border-gray-400 py-2 px-4">
+        Roles
+      </h3>
+      <table class="w-[100%] text-left table-auto p-4">
+        <thead>
+          <tr>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Name
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Title
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+                Description
+              </p>
+            </th>
+            <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70"></p>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (rolSelected) {
+
+          @for (permissions of rolSelected.permissions; track $index) {
+          <tr>
+            <td class="p-4 border-b border-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                {{ permissions.name }}
+              </p>
+            </td>
+            <td class="p-4 border-b border-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                {{ permissions.title }}
+              </p>
+            </td>
+            <td class="p-4 border-b border-blue-gray-50">
+              <p class="block font-sans text-sm antialiased font-normal leading-normal text-blue-gray-900">
+                {{ permissions.description }}
+              </p>
+            </td>
+            <td class="p-4 border-b border-blue-gray-50">
+              <button class="block font-sans text-sm antialiased font-medium leading-normal text-blue-gray-900">
+                Deleted
+              </button>
+            </td>
+          </tr>
+          }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

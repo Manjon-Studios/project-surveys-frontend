@@ -1,0 +1,40 @@
+<div #content class="max-w-[600px] mx-auto mt-8 bg-white border-[1px] border-black border-opacity-10 shadow-sm rounded-md"
+     [ngStyle]="{
+'font-family': themeGlobal.fontFamily.toString(),
+'color': themeGlobal.textColorElements.toString(),
+}">
+  <div class="border-b-[1px] py-4">
+    <h3 class="text-xl font-bold mb-2 px-4">Customer Satisfaction Survey (CSAT)</h3>
+    <p class="text-sm px-4">
+      Your feedback is valuable and will help us shape future products and experiences. This survey will take approximately [X] minutes to complete.
+    </p>
+  </div>
+  <ng-container *ngIf="data">
+    <form [formGroup]="form">
+      <ng-container *ngFor="let question of data.questions">
+        <div class="flex flex-col py-4">
+          <question-host [question]="question" [form]="form" />
+        </div>
+      </ng-container>
+    </form>
+    <div *ngIf="!isValidForm" class="p-4">
+      <button class="btn-submit" (click)="submit()">send</button>
+    </div>
+  </ng-container>
+  <div class="fixed top-4 right-4 border-2 p-4">
+    <div class="flex flex-col gap-2">
+      <label for="bgColorGeneric">Change background</label>
+      <input id="bgColorGeneric" type="color" (change)="onChangeBackground($event)" />
+    </div>
+    <div class="flex flex-col gap-2">
+      <label for="fontFamily">Change Typography</label>
+      <select id="fontFamily" (change)="onChangeFontFamily($event)">
+        <option value="Roboto, sans">Roboto</option>
+        <option value="Lato, sans-serif">Lato</option>
+        <option value="Quicksand, sans-serif">Quicksand</option>
+      </select>
+    </div>
+  </div>
+
+</div>
+

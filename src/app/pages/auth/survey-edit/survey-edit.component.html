@@ -1,0 +1,184 @@
+@if (data && data.questions) {
+  <section class="h-[100dvh] grid grid-cols-[300px_auto]">
+    <div
+      class="border-t-0 border-b-0 border-l-0 border-r-[1px] border-black border-opacity-10
+      border-solid shadow-lg bg-white">
+      <div class="p-4 bg-gray-100 border-b-[1px] border-gray-200">
+        <h3 class="text-sm font-bold">Paginas y Preguntas</h3>
+      </div>
+      <div class="flex flex-col gap-1 p-2">
+        @for (question of data.questions ; track $index) {
+          <div class="flex gap-4 items-center justify-between group transition-all duration-300 cursor-move bg-white border border-gray-300 px-4 py-2 rounded shadow-sm hover:shadow-md"
+               draggable="true"
+               (dragstart)="onDragStart($event, question)"
+               (dragover)="onDragOver($event)"
+               (drop)="onDrop($event, question)"
+               (dragenter)="onDragEnter(question)"
+               (dragleave)="onDragLeave()"
+               (click)="onToggleModalEditQuestion(); onSelectedQuestion(question);"
+               [class.bg-blue-600]="question._id === hoveredId"
+               [class.scale-102]="question._id === draggedId"
+               [class.opacity-50]="question._id === draggedId"
+               [class.shadow-xl]="question._id === draggedId">
+            <span class="text-black"> #{{ question.order + 1 }} {{ question.question }}</span>
+            <div class="flex gap-5">
+              <i class="fa-solid fa-trash text-black" (click)="onDeletedQuestion($event, question._id)"></i>
+              <i class="fa-solid fa-grip-vertical text-black hover:cursor-move"></i>
+            </div>
+          </div>
+        }
+      </div>
+      <!-- Tree -->
+      <ui-tree [items]="data.questions" [optionsTemplate]="options">
+        <ng-template #options let-items>
+          @for (question of data.questions; track question._id; let index = $index) {
+            <li
+              class="px-2 bg-gray-50 rounded-md"
+              draggable="true"
+              (dragstart)="onDragStart($event, question)"
+              (dragover)="onDragOver($event)"
+              (drop)="onDrop($event, question)"
+              (dragenter)="onDragEnter(question)"
+              (dragleave)="onDragLeave()"
+              (click)="onToggleModalEditQuestion(); onSelectedQuestion(question);"
+              [class.bg-blue-600]="question._id === hoveredId"
+              [class.scale-102]="question._id === draggedId"
+              [class.opacity-50]="question._id === draggedId"
+              [class.shadow-xl]="question._id === draggedId">
+              <button class="w-full flex gap-2 items-center px-4 py-2">
+                <i class="fa-solid fa-clipboard-question"></i>
+                <span class="break-words line-clamp-1">{{ question.question }}</span>
+              </button>
+            </li>
+          }
+        </ng-template>
+      </ui-tree>
+      <!-- // Tree -->
+      <div class="w-fit mx-auto">
+        <button class="w-fit mt-4 text-black border border-gray-300 px-4 py-2 rounded shadow-sm hover:shadow-md self-center text-xs uppercase focus:outline-offset-2"
+                (click)="onToggleModal()">
+          <i class="fa-solid fa-plus"></i>
+          Nueva pagina
+        </button>
+      </div>
+    </div>
+    <div class="max-h-full overflow-y-auto">
+      <div class="border-b-[1px] border-gray-200 p-3 grid grid-cols-2">
+        <div class="w-full flex items-center gap-4">
+          <h3 class="text-sm font-bold">Navbar</h3>
+        </div>
+        <div class="flex justify-end gap-1">
+          <button
+            class="fa-solid fa-palette text-xs border-[1px] px-2 py-1 rounded-lg border-black text-black hover:text-white hover:bg-black">
+          </button>
+          <button
+            class="fa-solid fa-gear text-xs border-[1px] px-2 py-1 rounded-lg border-black text-black hover:text-white hover:bg-black">
+          </button>
+        </div>
+      </div>
+      <div class="max-w-[600px] mx-auto py-8">
+        @if (data.questions.length > 0) {
+          @for (question of data.questions; track question._id) {
+
+            <div class="border-[1px] rounded-md mb-4">
+              <question-host
+                [question]="question"
+                [form]="formQuestionHost"
+              />
+            </div>
+            <!--
+              <text-editable [label]="question.question"
+                (outputLabelChange)="onEditTitle($event, question._id)" />
+              <text-editable *ngIf="question.description" [label]="question.description"
+                (outputLabelChange)="onEditDescription($event, question._id)" />
+            !-->
+          }
+        } @else {
+          <h2 class="text-center font-bold text-2xl">No existe ninguna pregunta...</h2>
+          <div class="w-fit mx-auto">
+            <button class="w-fit mt-4 text-black border border-gray-300 px-4 py-2 rounded shadow-sm hover:shadow-md self-center text-xs uppercase focus:outline-offset-2"
+                    (click)="onToggleModal()">
+              <i class="fa-solid fa-plus"></i>
+              Añadir pregunta
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+}
+
+<!-- Modal updated question -->
+<ng-container *ngIf="isOpenModalEditQuestion">
+  <div
+    class="w-full h-[100dvh] fixed top-0 left-0 bg-opacity-10 bg-[#00000073] flex flex-col justify-center items-center">
+    <div class="w-full h-[100dvh] fixed top-0 left-0 bg-opacity-10 bg-[#00000073] z-10"
+      (click)="onToggleModalEditQuestion(); onResetQuestionSelected();"></div>
+    <div class="bg-white rounded-md min-w-[1200px] w-full max-w-screen-sm relative z-20">
+      @if (questionSelected) {
+        @if (questionSelected.type === 'singleChoice') {
+          <app-single-form />
+        }
+        @if (questionSelected.type === 'multipleChoice') {
+          <app-multiple-form />
+        }
+
+        @if (questionSelected.type === 'textChoice') {
+          <text-form />
+        }
+      }
+    </div>
+  </div>
+</ng-container>
+<!-- // Modal updated question -->
+
+<!-- Modal created question -->
+<ng-container *ngIf="isOpenModal">
+  <div
+    class="w-full h-[100dvh] fixed top-0 left-0 bg-opacity-10 bg-[#00000073] flex flex-col justify-center items-center">
+    <div
+      class="w-full h-[100dvh] fixed top-0 left-0 bg-opacity-10 bg-[#00000073] z-10"
+         (click)="onToggleModal()"></div>
+    <div class="bg-white rounded-md py-2 min-w-96 w-full max-w-screen-sm relative z-20">
+      <section class="border-b-[1px] border-l-fuchsia-200 p-4">
+        <h2 class="text-3xl font-bold">Añadir nueva pregunta.</h2>
+      </section>
+      <section class="py-4 px-8">
+        <form [formGroup]="formGroupCreatedQuestion" (ngSubmit)="onSubmitCreatedQuestion()">
+          <div class="flex flex-col gap-2 mb-4">
+            <label for="">Que tipo <sup class="text-red-600">*</sup></label>
+            <select formControlName="type" name="" id="" class="p-3 rounded-md shadow-md"
+              placeholder="Selecione una opción:" required>
+              <option value="" disabled selected>Select your option</option>
+              <option value="singleChoice">Respuesta unica</option>
+              <option value="multipleChoice">Respuesta multiples</option>
+              <option value="textChoice">Respuesta de texto</option>
+            </select>
+            <p *ngIf="formGroupCreatedQuestion.get('type')?.touched &&
+            formGroupCreatedQuestion.get('type')?.hasError('type')" class="text-red-600">
+              Este campo es obligatorio.
+            </p>
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label for="">Titulo de la pregunta <sup class="text-red-600">*</sup></label>
+            <input formControlName="question" class="p-3 rounded-md shadow-md" placeholder="Ej: El patica..."
+              type="text" name="" required />
+            <p *ngIf="formGroupCreatedQuestion.get('question')?.touched &&
+          formGroupCreatedQuestion.get('question')?.hasError('required')" class="text-red-600">
+              Este campo es obligatorio.
+            </p>
+          </div>
+          <div class="flex flex-col gap-2 mb-4">
+            <label for="">Descripción de la pregunta</label>
+            <textarea formControlName="description" class="p-3 rounded-md shadow-md"
+              placeholder="Ej: El patica apresa a su presa..." name=""></textarea>
+          </div>
+          <button [disabled]="formGroupCreatedQuestion.invalid" type="submit"
+            class="px-4 py-2 rounded-md bg-blue-600 text-white disabled:opacity-40 disabled:cursor-not-allowed">
+            Enviar
+          </button>
+        </form>
+      </section>
+    </div>
+  </div>
+</ng-container>

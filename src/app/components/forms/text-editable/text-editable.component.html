@@ -1,0 +1,19 @@
+<div class="flex gap-4">
+  <div class="relative flex">
+    <span [class.opacity-0]="isEnabledModeEditabled">{{ label }}</span>
+    <input
+      #input
+      type="text"
+      class="absolute w-full top-0 left-0 bg-transparent"
+      [class.hidden]="!isEnabledModeEditabled"
+      [value]="label"
+      [tabIndex]="!isEnabledModeEditabled ? -1 : 0"
+      (blur)="onBlurModeEditabled()"
+    />
+  </div>
+  <button
+    aria-label="Editar"
+    class="fa-solid fa-pen text-black"
+    (click)="onEnabledModeEditabled()">
+  </button>
+</div>

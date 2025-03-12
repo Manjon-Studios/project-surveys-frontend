@@ -1,0 +1,27 @@
+@if (configuration) {
+  @if (configuration.options) {
+    <div class="multiple-choice flex flew-row flex-wrap gap-4" role="group">
+      @for (option of configuration.options; track $index) {
+        <div class="ui-checkbox">
+          <label
+              class="ui-checkbox-label"
+              [for]="option.value">
+            <input
+              class="ay11-visually-hidden"
+              type="checkbox"
+              [id]="option.value"
+              [value]="option.value"
+              [checked]="selectedValues.includes(option.value)"
+              (change)="onCheckboxChange(option.value, $event)"
+            />
+            <svg viewBox="0 0 100 100">
+              <path fill="none" stroke="#000" stroke-width="13" stroke-linecap="round" stroke-linejoin="round"
+                    stroke-miterlimit="10" d="M12.1 52.1l24.4 24.4 53-53" />
+              </svg>
+              {{ option?.label }}
+          </label>
+        </div>
+      }
+    </div>
+  }
+}

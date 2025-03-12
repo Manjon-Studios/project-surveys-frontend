@@ -1,0 +1,39 @@
+<div class="h-[100dvh] m-auto flex items-center justify-center">
+  <form [formGroup]="formGroup" class="w-72 h-fit p-4 shadow-md rounded-sm" (submit)="onSubmit($event)">
+    <div class="flex flex-col gap-1 mb-4">
+      <label for="email" class="text-xs">Email:</label>
+      <input
+        formControlName="email"
+        type="email"
+        id="email"
+        class="p-2 shadow-md rounded-md border-[1px] border-gray-200"
+        [class.border-red-700]="(formGroup.get('email')?.touched || formGroup.get('email')?.dirty) && formGroup.get('email')?.invalid"
+        [class.border-2]="(formGroup.get('email')?.touched || formGroup.get('email')?.dirty) && formGroup.get('email')?.invalid"
+      />
+      <p *ngIf="
+        (formGroup?.get('email')?.touched || formGroup?.get('email')?.dirty) && formGroup?.get('email')?.invalid"
+        class="text-xs text-red-600">
+        Los campos son requridos.
+      </p>
+    </div>
+    <div class="flex flex-col gap-1">
+      <label for="password" class="text-xs">Passoword:</label>
+      <input
+        formControlName="password"
+        type="password"
+        id="password"
+        class="p-2 shadow-md rounded-md border-[1px] border-gray-200"
+        [class.border-red-700]="(formGroup.get('password')?.touched || formGroup.get('password')?.dirty) && formGroup.get('password')?.invalid"
+        [class.border-2]="(formGroup.get('password')?.touched || formGroup.get('password')?.dirty) && formGroup.get('password')?.invalid"
+      />
+      <p *ngIf="
+        (formGroup?.get('password')?.touched || formGroup?.get('password')?.dirty) && formGroup?.get('password')?.invalid"
+        class="text-xs text-red-600">
+        Los campos son requridos.
+      </p>
+    </div>
+    <button [disabled]="formGroup.invalid" style="font-family: inherit;" class="w-fit text-white bg-blue-600 mt-4 p-2 rounded-sm self-center text-xs uppercase focus:outline-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed">
+      Sign In
+    </button>
+  </form>
+</div>

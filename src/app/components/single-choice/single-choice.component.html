@@ -1,0 +1,25 @@
+@if (configuration) {
+  @if (configuration.options) {
+    <div class="flex flex-col gap-4" role="radiogroup">
+    @for (option of configuration.options; track $index) {
+      <div class="w-full">
+        <label
+          class="single-choice-label w-full flex border-[1px] p-3 rounded-sm mr-2 cursor-pointer font-medium"
+          [class.single-choice-label--selected]="selectedValue === option.value"
+          [for]="generateIdentify(option.value)">
+          <input
+            type="radio"
+            class="ay11-visually-hidden"
+            [id]="generateIdentify(option.value)"
+            [checked]="selectedValue === option.value"
+            (change)="onSelectionChange(option.value)"
+          />
+
+          <span style="letter-spacing: 1px;">{{ option?.label }}</span>
+        </label>
+      </div>
+
+    }
+    </div>
+  }
+}

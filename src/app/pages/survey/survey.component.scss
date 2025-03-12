@@ -1,0 +1,13 @@
+.btn-submit {
+  @apply disabled:cursor-not-allowed border-[1px] p-3 rounded-md mr-2 cursor-pointer font-medium border-none font-bold uppercase;
+  background: var(--single-choice-bg);
+  color: var(--single-choice-color);
+  transition: ease-in-out 0.25s;
+  &:hover {
+    background: rgb(from var(--single-choice-bg) r g b / 80%);
+  }
+
+  &:is(:hover):is(:disabled) {
+    background: var(--single-choice-bg);
+  }
+}

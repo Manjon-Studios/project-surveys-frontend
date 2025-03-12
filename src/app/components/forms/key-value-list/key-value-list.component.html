@@ -1,0 +1,28 @@
+@if(controls) {
+  <div [formGroup]="controls" class="grid grid-cols-2 gap-1">
+    <input
+      type="text"
+      placeholder="Label"
+      class="px-2 py-4 rounded-md shadow-md"
+      formControlName="label"
+      [class.border-red-700]="(labelControl?.touched || labelControl?.dirty) && labelControl?.invalid"
+      [class.border-2]="(labelControl?.touched || labelControl?.dirty) && labelControl?.invalid"
+    />
+    <input
+      type="text"
+      placeholder="Value"
+      class="px-2 py-4 rounded-md shadow-md"
+      formControlName="value"
+      [class.border-red-700]="(valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
+      [class.border-2]="(valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
+    />
+  </div>
+
+
+  <p *ngIf="
+    (labelControl?.touched || labelControl?.dirty) && labelControl?.invalid ||
+    (valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
+    class="text-sm text-red-600 mt-2">
+    Los campos son requridos.
+  </p>
+}

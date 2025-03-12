@@ -1,0 +1,67 @@
+<form [formGroup]="formMultiple" (ngSubmit)="onSubmit($event)">
+  <survey-edit-layout>
+    <ng-container question>
+      <div class="w-full flex flex-col gap-2">
+        <label for="">Pregunta <sup class="text-red-600">*</sup></label>
+        <input
+          formControlName="question"
+          type="text"
+          class="p-3 rounded-md shadow-md"
+          [class.border-red-700]="(formMultiple.get('question')?.touched || formMultiple.get('question')?.dirty) && formMultiple.get('question')?.invalid"
+          [class.border-2]="(formMultiple.get('question')?.touched || formMultiple.get('question')?.dirty) && formMultiple.get('question')?.invalid"
+        />
+        <p *ngIf="
+        (formMultiple?.get('question')?.touched || formMultiple?.get('question')?.dirty) && formMultiple?.get('question')?.invalid"
+        class="text-xs text-red-600">
+        Los campos son requridos.
+      </p>
+      </div>
+      <div class="w-full flex flex-col gap-2">
+        <label for="">Descipción <small class="text-xs">(opcional)</small></label>
+        <textarea formControlName="description" class="p-1 rounded-md shadow-md resize-y min-h-20"></textarea>
+      </div>
+    </ng-container>
+    <ng-container content>
+      <div class="flex flex-col gap-4">
+        <h3>Respuestas</h3>
+        @if (optionsArray()) {
+        @for (option of optionsArray().controls; track $index; let idx = $index) {
+        <div class="w-full grid grid-cols-[auto_24px] gap-2 items-center">
+          <key-value-list [controls]="asFormGroup(option)" />
+          <button type="button" class="w-fit fa-solid fa-trash" (click)="removeAtOption(idx)"></button>
+        </div>
+        }
+        }
+        <button type="button" class="m-auto w-10 h-10 p-0 mt-8 rounded-full bg-black text-white shadow-lg"
+          (click)="addOption()">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+    </ng-container>
+    <ng-container sidebar>
+      <div class="w-full flex flex-col gap-2">
+        <label for="">Que tipo <sup class="text-red-600">*</sup></label>
+        <select formControlName="type" name="" id="" class="p-3 rounded-md shadow-md" placeholder="Selecione una opción:" required>
+          <option value="" disabled selected>Select your option</option>
+          <option value="singleChoice">Unica respuesta
+          </option>
+          <option value="multipleChoice">Multiples
+            respuestas</option>
+            <option value="textChoice">Respuesta de texto</option>
+        </select>
+      </div>
+      <div class="my-4">
+        <label for="required">
+          <input formControlName="isRequired" type="checkbox" id="required" />
+          Es requerido.
+        </label>
+      </div>
+      <min-max formControlName="minmax" />
+    </ng-container>
+    <button btn type="submit" [disabled]="formMultiple.invalid"
+      class="w-full flex gap-2 items-center justify-center disabled:bg-blue-200 disabled:cursor-not-allowed  bg-blue-800 hover:bg-blue-700 px-4 py-2 text-white rounded-md uppercase">
+      <i class="fa-regular fa-paper-plane"></i>
+      Enviar
+    </button>
+  </survey-edit-layout>
+</form>

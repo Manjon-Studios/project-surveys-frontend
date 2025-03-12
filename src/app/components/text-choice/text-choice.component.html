@@ -1,0 +1,10 @@
+@if (configuration) {
+  <textarea
+  class="ui-textarea"
+  (input)="onInput($event)"></textarea>
+  @if (configuration.maxLength) {
+    <p class="flex gap-1 items-center">
+      <span [class.text-red-500]="this.value && (this.value.length > this.configuration.maxLength)">{{ this.value ? this.value.length : '0' }}</span> / {{ this.configuration.maxLength }}
+    </p>
+  }
+}

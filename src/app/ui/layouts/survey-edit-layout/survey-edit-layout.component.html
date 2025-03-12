@@ -1,0 +1,17 @@
+<div class="w-full py-4">
+  <div class="grid grid-cols-[auto_300px] gap-4"> <!-- .survey-edit-layout -->
+    <!-- First Column  -->
+     <div class="w-full p-4 flex flex-col gap-4"> <!-- .survey-edit-layout-content -->
+      <ng-content select="[question]"></ng-content>
+      <ng-content select="[content]"></ng-content>
+     </div>
+     <div class="w-full h-full border-l-[1px] p-4 flex flex-col justify-between">
+      <div class="w-full flex flex-col">
+        <ng-content select="[sidebar]"></ng-content>
+      </div>
+      <div class="flex">
+        <ng-content select="[btn]"></ng-content>
+      </div>
+    </div>
+  </div>
+</div>
