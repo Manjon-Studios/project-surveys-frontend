@@ -14,6 +14,6 @@ export class SignUpService {
   constructor(private _http: HttpClient) {}
 
   signIn(payload: IPayloadSignIn) {
-    this._http.post('http://localhost:3000/sign-up', payload).subscribe((e) => console.log(e));
+    this._http.post('https://survey-server.albertmanjon.es/sign-up', payload).subscribe((e) => console.log(e));
   }
 }

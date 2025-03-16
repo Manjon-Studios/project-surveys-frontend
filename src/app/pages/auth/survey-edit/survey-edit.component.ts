@@ -41,8 +41,6 @@ export interface SurveyQuestion {
     SingleFormComponent,
     MultipleFormComponent,
     TextFormComponent,
-    TextEditableComponent,
-    SingleComponent,
     QuestionHostComponent,
     TreeComponent,
   ],
@@ -90,7 +88,7 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
 
     this.dataSubscription = this.surveyEditService.questionData$
       .subscribe(
-        (data) => this.data = data
+        (data) =>  { this.data = data; console.log(this.data); },
       );
 
     this.surveyEditQuestionSelectedService.questionSelected$
@@ -267,7 +265,7 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
 
 
       this.httpClient.post<SurveyQuestion>(
-          'http://localhost:3000/questions',
+          'https://survey-server.albertmanjon.es/questions',
           {
             ...newQuestion
           }
@@ -282,6 +280,4 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
       });
     }
   }
-
-  protected readonly console = console;
 }

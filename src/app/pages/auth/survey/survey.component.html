@@ -5,12 +5,7 @@
   </div>
   <div class="p-4">
     <h3 class="text-xl font-bold">Content</h3>
-    <pre>
-      <code>
-        {{surveys | json}}
-      </code>
-    </pre>
-
+    <button class="px-4 py-2 bg-blue-300 mb-4" (click)="onToggleModalCreatedSurvey()">Nueva encuesta</button>
     <div class="relative overflow-x-auto">
       <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -24,8 +19,8 @@
           </tr>
         </thead>
         <tbody>
-          @if(surveys) {
-            @for (survey of surveys; track $index) {
+          @if(surveys()) {
+            @for (survey of surveys(); track survey._id) {
               <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 border-gray-200">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                   {{ survey.title }}
@@ -41,11 +36,28 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </div>
 
+@if (isOpenModalCreatedSurvey()) {
+  <div class="w-full h-[100dvh] fixed top-0 left-0 flex items-center justify-center">
+    <div ></div>
+    <div class="w-[600px] mx-auto p-4 bg-white shadow-md rounded-sm">
+      <form [formGroup]="formCreatedSurvey" class="flex flex-col gap-4" (ngSubmit)="onSubmit($event)">
+        <div class="flex flex-col gap-2">
+          <label class="text-base" for="title">Titulo</label>
+          <input formControlName="title" class="p-2 rounded-md shadow-md" type="text" id="title" />
+        </div>
+        <div class="flex flex-col gap-2">
+          <label class="text-base" for="desc">description <sup class="text-[8px]">(Optional)</sup></label>
+          <textarea formControlName="description" class="p-2 rounded-md shadow-md" id="desc"></textarea>
+        </div>
+        <button class="px-4 py-2 bg-blue-300 mb-4 rounded-sm">Crear encuesta</button>
+      </form>
+    </div>
+  </div>
+}
 
-<div *ngIf="isLoading" class="fixed top-0 w-full h-[100dvh] bg-white text-black">
+<div *ngIf="isLoading()" class="fixed top-0 w-full h-[100dvh] bg-white text-black">
   CARGANDO...
 </div>

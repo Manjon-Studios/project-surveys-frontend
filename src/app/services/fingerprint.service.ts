@@ -18,7 +18,7 @@ export class FingerprintService {
   }
 
   public setFingerprint(anonymous: IFingerPrint): Observable<IFingerPrint> {
-    return this.httpClient.post<IFingerPrint>('http://localhost:3001/anonymous', {...anonymous});
+    return this.httpClient.post<IFingerPrint>('https://survey-server.albertmanjon.es/anonymous', {...anonymous});
   }
 
   private async generateFingerprint() {

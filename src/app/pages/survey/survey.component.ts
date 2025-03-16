@@ -67,7 +67,7 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
     (e) => this.isValidSurvey(this.form.invalid)
   );
 
-  this.httpClient.get<IHTTPSurveyQuestion>(`http://localhost:3002/questions/find-survey-questions/${this.id}`)
+  this.httpClient.get<IHTTPSurveyQuestion>(`https://survey-server.albertmanjon.es/questions/find-survey-questions/${this.id}`)
     .subscribe({
       next: (response) => {
         this.data = response;

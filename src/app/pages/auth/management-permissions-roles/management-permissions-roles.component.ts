@@ -61,7 +61,7 @@ export class ManagementPermissionsRolesComponent implements OnInit {
     });
 
     this._http
-      .get<Permissions[]>('http://localhost:3000/permissions/find-all')
+      .get<Permissions[]>('https://survey-server.albertmanjon.es/permissions/find-all')
       .pipe(map((permissions) => this.mappingPermissions(permissions)))
       .subscribe((permissions: IPermissions[]) => {
         this.permissions = [...permissions];
@@ -77,7 +77,7 @@ export class ManagementPermissionsRolesComponent implements OnInit {
       });
 
     this._http
-      .get<IResponseRolesPermissions[]>(`http://localhost:3000/roles/find-all`)
+      .get<IResponseRolesPermissions[]>(`https://survey-server.albertmanjon.es/roles/find-all`)
       .pipe(
         map((rolesPermissions) =>
           this.mappingRolesPermissions(rolesPermissions)

@@ -15,6 +15,8 @@ export class TreeComponent {
   @Input() label: string = "Page 1";
   @Input() optionsTemplate!: TemplateRef<any>;
   @Input() isAvailableAreaDraggable = false;
+  // @ts-ignore
+  @Input() isActivated = false;
 
   public isOpenDropdown: boolean = false;
 

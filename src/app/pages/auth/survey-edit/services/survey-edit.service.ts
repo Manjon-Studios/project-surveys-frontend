@@ -49,7 +49,7 @@ export class SurveyEditService {
 
   getQuestions(id: string) {
     this._httpClient
-      .get<IHTTPSurveyQuestion>(`http://localhost:3002/questions/find-survey-questions/${id}`)
+      .get<IHTTPSurveyQuestion>(`https://survey-server.albertmanjon.es/questions/find-survey-questions/${id}`)
       .pipe(
         takeUntil(this.unsubscribe$),
         catchError(() => of({ questions: [] }))
@@ -62,7 +62,7 @@ export class SurveyEditService {
 
   setTheme(id: string, theme: ISurveyThemeGlobal) {
     this._httpClient
-      .post<IResponseSurveyThemeGlobal>(`http://localhost:3002/survey/update-theme/${id}`, { theme })
+      .post<IResponseSurveyThemeGlobal>(`https://survey-server.albertmanjon.es/survey/update-theme/${id}`, { theme })
       .pipe(
         takeUntil(this.unsubscribe$),
         catchError(() => of(defaultTheme))
@@ -77,7 +77,7 @@ export class SurveyEditService {
     question_id: string,
     data: T
   ): void {
-    this._httpClient.put<SurveyQuestion>(`http://localhost:3000/questions/${question_id}`,
+    this._httpClient.put<SurveyQuestion>(`https://survey-server.albertmanjon.es/questions/${question_id}`,
     {...data})
     .pipe(
       catchError(() => of({} as SurveyQuestion))
@@ -91,7 +91,7 @@ export class SurveyEditService {
   }
 
   onSaveReorderQuestions(questions: IQuestionReorder[]) {
-    this._httpClient.post<any>(`http://localhost:3002/questions/reorder`, {questions}).subscribe((a) => {
+    this._httpClient.post<any>(`https://survey-server.albertmanjon.es/questions/reorder`, {questions}).subscribe((a) => {
       console.log(a)
     });
   }

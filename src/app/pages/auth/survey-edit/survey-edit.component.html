@@ -7,7 +7,7 @@
         <h3 class="text-sm font-bold">Paginas y Preguntas</h3>
       </div>
       <div class="flex flex-col gap-1 p-2">
-        @for (question of data.questions ; track $index) {
+        @for (question of data.questions; track question._id; let idx = $index) {
           <div class="flex gap-4 items-center justify-between group transition-all duration-300 cursor-move bg-white border border-gray-300 px-4 py-2 rounded shadow-sm hover:shadow-md"
                draggable="true"
                (dragstart)="onDragStart($event, question)"
@@ -29,30 +29,33 @@
         }
       </div>
       <!-- Tree -->
-      <ui-tree [items]="data.questions" [optionsTemplate]="options">
-        <ng-template #options let-items>
-          @for (question of data.questions; track question._id; let index = $index) {
-            <li
-              class="px-2 bg-gray-50 rounded-md"
-              draggable="true"
-              (dragstart)="onDragStart($event, question)"
-              (dragover)="onDragOver($event)"
-              (drop)="onDrop($event, question)"
-              (dragenter)="onDragEnter(question)"
-              (dragleave)="onDragLeave()"
-              (click)="onToggleModalEditQuestion(); onSelectedQuestion(question);"
-              [class.bg-blue-600]="question._id === hoveredId"
-              [class.scale-102]="question._id === draggedId"
-              [class.opacity-50]="question._id === draggedId"
-              [class.shadow-xl]="question._id === draggedId">
-              <button class="w-full flex gap-2 items-center px-4 py-2">
-                <i class="fa-solid fa-clipboard-question"></i>
-                <span class="break-words line-clamp-1">{{ question.question }}</span>
-              </button>
-            </li>
-          }
-        </ng-template>
-      </ui-tree>
+      @for (question of data.questions; track question.question; let idx = $index) {
+        <ui-tree [isActivated]="idx === 0" [items]="data.questions" [optionsTemplate]="options">
+          <ng-template #options let-items>
+            @for (question of data.questions; track question._id; let index = $index) {
+              <li
+                class="px-2 bg-gray-50 rounded-md"
+                draggable="true"
+                (dragstart)="onDragStart($event, question)"
+                (dragover)="onDragOver($event)"
+                (drop)="onDrop($event, question)"
+                (dragenter)="onDragEnter(question)"
+                (dragleave)="onDragLeave()"
+                (click)="onToggleModalEditQuestion(); onSelectedQuestion(question);"
+                [class.bg-blue-600]="question._id === hoveredId"
+                [class.scale-102]="question._id === draggedId"
+                [class.opacity-50]="question._id === draggedId"
+                [class.shadow-xl]="question._id === draggedId">
+                <button class="w-full flex gap-2 items-center px-4 py-2">
+                  <i class="fa-solid fa-clipboard-question"></i>
+                  <span class="break-words line-clamp-1">{{ question.question }}</span>
+                </button>
+              </li>
+            }
+          </ng-template>
+        </ui-tree>
+      }
+
       <!-- // Tree -->
       <div class="w-fit mx-auto">
         <button class="w-fit mt-4 text-black border border-gray-300 px-4 py-2 rounded shadow-sm hover:shadow-md self-center text-xs uppercase focus:outline-offset-2"

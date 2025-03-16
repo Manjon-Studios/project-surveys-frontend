@@ -33,7 +33,7 @@ export class ManagementComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.httpClient.get<IResponsePlansPayload[]>('http://localhost:3000/plans/find-all')
+    this.httpClient.get<IResponsePlansPayload[]>('https://survey-server.albertmanjon.es/plans/find-all')
       .pipe(
         map((plans: IResponsePlansPayload[]) => this.mapResponsePlans(plans)),
       )
@@ -52,7 +52,7 @@ export class ManagementComponent implements OnInit {
           }
       });
     this.httpClient
-      .get<IResponsePermissionsPayload[]>('http://localhost:3000/permissions/find-all')
+      .get<IResponsePermissionsPayload[]>('https://survey-server.albertmanjon.es/permissions/find-all')
       .pipe(map(permissions => this.mappingPermissions(permissions)))
       .subscribe((permissions) => this.permissions = permissions);
   }

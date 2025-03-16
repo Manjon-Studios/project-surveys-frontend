@@ -19,7 +19,7 @@ export class ManagementPlansService {
   constructor(private http: HttpClient) {}
 
   updatePlans(planID: string, payload: IPlansPayload) {
-    this.http.put<IResponsePlansPayload>(`http://localhost:3000/plans/${planID}`, payload)
+    this.http.put<IResponsePlansPayload>(`https://survey-server.albertmanjon.es/plans/${planID}`, payload)
       .pipe(
         map(response => this.mappingRequestPlans(response)),
       )
