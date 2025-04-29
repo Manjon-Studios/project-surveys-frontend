@@ -12,13 +12,12 @@ import {CommonModule} from "@angular/common";
 })
 export class TreeComponent {
   @Input() items: unknown[] = [];
-  @Input() label: string = "Page 1";
+  @Input() labelTitle: string = "Page 1";
   @Input() optionsTemplate!: TemplateRef<any>;
   @Input() isAvailableAreaDraggable = false;
-  // @ts-ignore
   @Input() isActivated = false;
 
-  public isOpenDropdown: boolean = false;
+    public isOpenDropdown: boolean = false;
 
   constructor() {}
 

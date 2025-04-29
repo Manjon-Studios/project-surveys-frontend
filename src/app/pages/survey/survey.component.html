@@ -1,26 +1,48 @@
-<div #content class="max-w-[600px] mx-auto mt-8 bg-white border-[1px] border-black border-opacity-10 shadow-sm rounded-md"
-     [ngStyle]="{
-'font-family': themeGlobal.fontFamily.toString(),
-'color': themeGlobal.textColorElements.toString(),
-}">
-  <div class="border-b-[1px] py-4">
-    <h3 class="text-xl font-bold mb-2 px-4">Customer Satisfaction Survey (CSAT)</h3>
-    <p class="text-sm px-4">
-      Your feedback is valuable and will help us shape future products and experiences. This survey will take approximately [X] minutes to complete.
-    </p>
-  </div>
-  <ng-container *ngIf="data">
-    <form [formGroup]="form">
-      <ng-container *ngFor="let question of data.questions">
-        <div class="flex flex-col py-4">
-          <question-host [question]="question" [form]="form" />
-        </div>
-      </ng-container>
-    </form>
-    <div *ngIf="!isValidForm" class="p-4">
-      <button class="btn-submit" (click)="submit()">send</button>
+@if (pages) {
+  @if (getCurrentPage()) {
+    <div #content
+    class="max-w-[600px] mx-auto mt-8 bg-white border-[1px] p-2 border-black border-opacity-10 shadow-sm rounded-md"
+    [ngStyle]="{
+      'font-family': themeGlobal.fontFamily.toString(),
+      'color': themeGlobal.textColorElements.toString(),
+      }">
+      <h2>{{ getCurrentPage().title }}</h2>
+      <p *ngIf="getCurrentPage()?.description">{{ getCurrentPage().description }}</p>
+      @if (getCurrentPage().questions && getCurrentPage().questions.length > 0) {
+        @for (question of getCurrentPage().questions; track question.id) {
+          {{ form.get(question.id)?.invalid }}
+          <question-page
+            [form]="getFormGroupByPage()"
+            [question]="question"
+          />
+        }
+      }
+      <div class="flex items-center justify-end gap-4 mt-2">
+        <button
+          [class.hidden]="currentPage <= 0"
+          (click)="prevPage()"
+          class="p-2 bg-blue-600 text-white rounded-md">
+          PREVIEW
+        </button>
+        <button
+          [disabled]="invalidForm"
+          [class.ay11-visually-hidden]="!isExistPage((currentPage + 1))"
+          (click)="nextPage()"
+          class="p-2 bg-blue-600 text-white rounded-md disabled:bg-gray-200 disabled:text-black disabled:cursor-not-allowed">
+          NEXT
+        </button>
+        <button
+          class="p-2 bg-blue-600 text-white rounded-md disabled:bg-gray-200 disabled:text-black disabled:cursor-not-allowed uppercase"
+          [disabled]="invalidForm"
+          [class.ay11-visually-hidden]="currentPage !== (pages.length - 1)"
+          (click)="submit()">
+          Enviar encuesta...
+        </button>
+      </div>
     </div>
-  </ng-container>
+  }
+}
+
   <div class="fixed top-4 right-4 border-2 p-4">
     <div class="flex flex-col gap-2">
       <label for="bgColorGeneric">Change background</label>
@@ -35,6 +57,4 @@
       </select>
     </div>
   </div>
-
-</div>
 

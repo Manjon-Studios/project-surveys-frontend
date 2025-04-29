@@ -24,7 +24,7 @@ export interface Permissions {
 
 @Component({
   selector: 'management-permissions-roles',
-  imports: [CommonModule, ReactiveFormsModule, DatePipe],
+  imports: [CommonModule, ReactiveFormsModule],
   standalone: true,
   templateUrl: './management-permissions-roles.component.html',
   styleUrl: './management-permissions-roles.component.scss',
@@ -61,7 +61,7 @@ export class ManagementPermissionsRolesComponent implements OnInit {
     });
 
     this._http
-      .get<Permissions[]>('https://survey-server.albertmanjon.es/permissions/find-all')
+      .get<Permissions[]>('http://localhost:3004/permissions/find-all')
       .pipe(map((permissions) => this.mappingPermissions(permissions)))
       .subscribe((permissions: IPermissions[]) => {
         this.permissions = [...permissions];
@@ -77,7 +77,7 @@ export class ManagementPermissionsRolesComponent implements OnInit {
       });
 
     this._http
-      .get<IResponseRolesPermissions[]>(`https://survey-server.albertmanjon.es/roles/find-all`)
+      .get<IResponseRolesPermissions[]>(`http://localhost:3004/roles/find-all`)
       .pipe(
         map((rolesPermissions) =>
           this.mappingRolesPermissions(rolesPermissions)

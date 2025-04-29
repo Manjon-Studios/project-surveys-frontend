@@ -63,6 +63,10 @@ export class MultipleChoiceComponent implements OnInit, ControlValueAccessor {
 
   writeValue(value: string[]): void {
     this.selectedValues = value || [];
+
+    if (this.formControl) {
+      this.formControl.setValue(value, { emitEvent: false });
+    }
   }
 
   registerOnChange(fn: (value: string[]) => void): void {

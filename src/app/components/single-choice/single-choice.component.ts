@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import {Component, inject, OnInit, forwardRef, Input, Inject, ViewEncapsulation} from '@angular/core';
-import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl } from '@angular/forms';
+import { NG_VALUE_ACCESSOR, ControlValueAccessor, FormControl, Validators } from '@angular/forms';
 import { CONFIG_TOKEN } from '../question-host/question-host.component';
 
 export interface ISingleChoiceGlobalConfiguration {
   options: ISingleChoiceConfiguration[];
+  required?: boolean;
 }
 
 export interface ISingleChoiceConfiguration {
@@ -33,7 +34,7 @@ export class SingleChoiceComponent implements OnInit, ControlValueAccessor {
   public configuration!: ISingleChoiceGlobalConfiguration;
   public time: number = Date.now();
 
-  @Input() formControl!: FormControl;
+  public formControl!: FormControl;
   selectedValue: string = '';
 
   onChange: (value: string) => void = () => {};
@@ -46,6 +47,12 @@ export class SingleChoiceComponent implements OnInit, ControlValueAccessor {
   ngOnInit(): void {
     this.configuration = this._config as ISingleChoiceGlobalConfiguration;
     this.formControl = this.injectedFormControl;
+
+    if (!this.formControl) {
+      console.warn('SingleChoiceComponent: No FormControl was provided');
+    }else {
+      this.applyValidations();
+    }
   }
 
   generateIdentify(value: string): string {
@@ -54,6 +61,9 @@ export class SingleChoiceComponent implements OnInit, ControlValueAccessor {
 
   writeValue(value: string): void {
     this.selectedValue = value;
+    if (this.formControl) {
+      this.formControl.setValue(value, { emitEvent: false });
+    }
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -66,13 +76,29 @@ export class SingleChoiceComponent implements OnInit, ControlValueAccessor {
 
   onSelectionChange(value: string): void {
     this.selectedValue = value;
+
     if (this.formControl) {
+      this.formControl.markAsTouched();
+      this.formControl.markAsDirty();
       this.formControl.setValue(value);
     } else {
-      console.error('formControl is undefined in SingleChoiceComponent');
+      console.error('SingleChoiceComponent: formControl is undefined');
     }
 
     this.onChange(value);
     this.onTouched();
+  }
+
+  private applyValidations(): void {
+    if (!this.formControl) return;
+
+    const validators = [];
+
+    if (this.configuration?.required) {
+      validators.push(Validators.required);
+    }
+
+    this.formControl.setValidators(validators);
+    this.formControl.updateValueAndValidity();
   }
 }

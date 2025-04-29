@@ -6,18 +6,21 @@ import {
   OnDestroy,
   OnInit,
   Renderer2,
-  AfterViewInit
+  AfterViewInit, WritableSignal, signal, DoCheck
 } from '@angular/core';
 import { FingerprintService } from '../../services/fingerprint.service';
-import { EMPTY, Subscription, switchMap, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, EMPTY, map, Subscription, switchMap, tap } from 'rxjs';
 import { StorageService } from '../../services/storage.service';
 import { ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { IHTTPSurveyQuestion, SurveyQuestion } from '../auth/survey-edit/survey-edit.component';
 import { QuestionHostComponent } from "../../components/question-host/question-host.component";
-import { FormGroup, ReactiveFormsModule } from '@angular/forms';
-import {getContrastColor, themeGlobal} from "../../configuration/theme-survey.config";
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { getContrastColor, themeGlobal } from "../../configuration/theme-survey.config";
+import { environment } from "../../../environments/environment";
+import { IPage, IQuestion, Pages, Question } from "../auth/survey-edit/services/survey-edit.service";
+import { QuestionPageComponent } from "./components/question-page/question-page.component";
 
 export interface IFingerPrint {
   fingerprint: string,
@@ -29,14 +32,14 @@ export interface IFingerPrint {
   selector: 'view-survey',
   imports: [
     CommonModule,
-    QuestionHostComponent,
+    QuestionPageComponent,
     ReactiveFormsModule,
-],
+  ],
   standalone: true,
   templateUrl: './survey.component.html',
   styleUrl: './survey.component.scss',
 })
-export class ViewSurveyComponent implements OnInit, OnDestroy {
+export class ViewSurveyComponent implements OnInit, OnDestroy, DoCheck {
 
   public isValidForm!: boolean;
   public themeGlobal = themeGlobal;
@@ -45,38 +48,127 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
   public form = new FormGroup({});
   public subscriptionFingerPrint!: Subscription;
   private id!: string | null;
+  public pages: IPage[] = [];
+  public currentPage: number = 0;
+  public invalidForm: boolean = false;
 
   constructor(
     private fingerprintService: FingerprintService,
     private storageService: StorageService,
     private route: ActivatedRoute,
     private httpClient: HttpClient,
-    private cdRef: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder,
   ) { }
 
   ngOnInit(): void {
     this._init();
     this.id = this.route.snapshot.paramMap.get('id');
-    console.log(this.themeGlobal);
 
-  if (!this.id) {
-    throw new Error('No exist id');
+    if (!this.id) {
+      throw new Error('No exist id');
+    }
+
+    this.form.valueChanges.subscribe((e) => { });
+
+    this.httpClient.get<Pages[]>(`${environment.API_URL}pages/find/${this.id}`)
+      .pipe(
+        map((pages) => pages.sort(
+          (a, b) => a.order - b.order).map((page: Pages) => this.mappingDataPages(page))
+        ),
+      )
+      .subscribe({
+        next: (response) => {
+          //this.data = response;
+          this.pages.push(...response);
+          this.generateFormGroupByPages();
+        },
+        error: (err) => {
+          console.error('Error fetching survey questions:', err);
+        }
+      });
+    this.addStyleSurvey();
   }
 
-  this.form.valueChanges.subscribe(
-    (e) => this.isValidSurvey(this.form.invalid)
-  );
+  ngDoCheck() {
+    this.isInvalidFormPage();
+  }
 
-  this.httpClient.get<IHTTPSurveyQuestion>(`https://survey-server.albertmanjon.es/questions/find-survey-questions/${this.id}`)
-    .subscribe({
-      next: (response) => {
-        this.data = response;
-      },
-      error: (err) => {
-        console.error('Error fetching survey questions:', err);
-      }
+  generateFormGroupByPages(): void {
+    this.pages.map((page: IPage) => {
+      this.form.setControl(page.id, this.fb.group({}))
+      this.form.get(page.id)?.setErrors({ invalid: true });
+
+      this.form.get(page.id)?.valueChanges
+        .pipe(debounceTime(100), distinctUntilChanged()) // Evita múltiples emisiones innecesarias
+        .subscribe((e) => {
+          this.isInvalidFormPage();
+          if (this.form.get(page.id)?.hasError('invalid')) {
+            this.form.get(page.id)?.setErrors(null);
+            this.form.get(page.id)?.updateValueAndValidity({ emitEvent: false }); // Evita disparar otro evento
+            this.invalidForm = !!this.form.get(page.id)?.hasError('invalid');
+          } else {
+            this.invalidForm = false;
+          }
+        });
     });
-  this.addStyleSurvey();
+  }
+
+  getFormGroupByPage() {
+    return this.form.get(this.pages[this.currentPage].id) as FormGroup;
+  }
+  getFormGroupById(id: string): FormGroup<any> {
+    return this.form.get(id) as FormGroup;
+  }
+
+  mappingDataPages(page: Pages): IPage {
+    return {
+      id: page._id,
+      title: page.title,
+      description: page?.description,
+      order: page?.order,
+      questions: page.questions.map((q: Question) => {
+        return {
+          id: q._id,
+          type: q.type,
+          question: q.question,
+          description: q?.description,
+          order: q.order,
+          isRequired: q.isRequired,
+          config: q.config,
+        } as IQuestion;
+      }),
+    }
+  }
+
+  getCurrentPage(): IPage {
+    return this.pages[this.currentPage];
+  }
+
+  isExistPage(index: number): boolean {
+    return !!(this.pages[index]);
+  }
+
+  isInvalidFormPage(): void {
+    this.invalidForm = !!((this.pages[this.currentPage] && this.form.get(this.pages[this.currentPage].id)?.invalid));
+  }
+
+  nextPage(): void {
+    if (
+      this.getFormGroupByPage() &&
+      this.getFormGroupById(this.pages[this.currentPage].id)
+    ) {
+      if (this.pages[this.currentPage + 1]) {
+        this.currentPage++;
+        this.isInvalidFormPage();
+      }
+    }
+  }
+
+  prevPage(): void {
+    if (this.pages[this.currentPage - 1]) {
+      this.currentPage--;
+    }
   }
 
   ngOnDestroy(): void {
@@ -85,39 +177,53 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
     }
   }
 
+  findPageById(id: string): IPage | undefined {
+    return this.pages.find((page) => page.id === id);
+  }
+
   submit() {
+    console.log('Submit', this.form.invalid);
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
-    }else {
+    }
 
-      let responses: any = []
-      Object.keys(this.form.value).forEach((key) => {
-        const findQuestion = this.getQuestion(key);
-        if(findQuestion) {
-          const {question, type} = findQuestion;
-          responses.push(
-            {
-              questionId: key,
-              question,
-              type,
-              answer: (this.form.value as any)[key]
-            }
-          );
-        }
+    let responses: any[] = []
+      Object.keys(this.form.value).map((control) => {
+        // Question of page
+        const getQuestionsByPage = this.findPageById(control)!.questions;
+        // Obtener vía form las respuestas de cada pagina
+        const getResponseQuestions: any[] = this.form.get(control)?.value;
+        // Generar objeto para enviarlo al servidor
+        console.log(
+          Object.keys(getResponseQuestions).map((child) => (
+            getQuestionsByPage
+              .filter((q) => q.id === child)
+              .map((q) => ({
+                questionId: q.id,
+                question: q.question,
+                type: q.type,
+                answer: this.form.get(control)?.get(child)?.value,
+              }))
+          ))
+        );
       });
+
+      console.log(responses)
+
       const responsesQuestion = {
         anonymous_id: this.uniqueId,
         survey_id: this.id,
-        responses: [
-          ...responses
-        ]
+        responses
       };
 
-      this.httpClient.post(`http://localhost:3000/responses`, responsesQuestion).subscribe((a) => {
-        console.log(a);
-      })
-    }
+      // console.log('Responses', responsesQuestion);
+
+      // this.httpClient.post(`${environment.API_URL}responses`, responsesQuestion)
+      //   .subscribe((a) => {
+      //   console.log(a);
+      // })
+
   }
 
   addStyleSurvey(): void {
@@ -134,7 +240,7 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
       bgColorGeneric: value,
       textColorElementsSelectable: getContrastColor(value)
     };
-    this.cdRef.detectChanges();
+    this.cdr.detectChanges();
     this.addStyleSurvey();
     console.log(this.themeGlobal);
   }
@@ -145,13 +251,14 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
       ...this.themeGlobal,
       fontFamily: value,
     };
-    this.cdRef.detectChanges();
+    this.cdr.detectChanges();
     this.addStyleSurvey();
   }
 
   isValidSurvey(isValid: boolean): void {
-    this.isValidForm =  isValid;
+    this.isValidForm = isValid;
   }
+
   getQuestion(question_id: string): SurveyQuestion | undefined {
     return this.data.questions.find(q => q._id === question_id);
   }
@@ -180,6 +287,6 @@ export class ViewSurveyComponent implements OnInit, OnDestroy {
       ).subscribe();
     }
 
-    this.cdRef.detectChanges();
+    this.cdr.detectChanges();
   }
 }

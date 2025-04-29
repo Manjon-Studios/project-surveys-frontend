@@ -13,7 +13,7 @@
       placeholder="Value"
       class="px-2 py-4 rounded-md shadow-md"
       formControlName="value"
-      [class.border-red-700]="(valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
+      [class.border-red-700]= "(valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
       [class.border-2]="(valueControl?.touched || valueControl?.dirty) && valueControl?.invalid"
     />
   </div>

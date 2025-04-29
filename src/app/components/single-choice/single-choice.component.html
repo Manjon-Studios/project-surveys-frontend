@@ -6,7 +6,8 @@
         <label
           class="single-choice-label w-full flex border-[1px] p-3 rounded-sm mr-2 cursor-pointer font-medium"
           [class.single-choice-label--selected]="selectedValue === option.value"
-          [for]="generateIdentify(option.value)">
+          [for]="generateIdentify(option.value)"
+          [attr.aria-label]="option.label">
           <input
             type="radio"
             class="ay11-visually-hidden"

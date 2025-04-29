@@ -1,43 +1,51 @@
-import { ChangeDetectionStrategy, Component, InjectionToken, Injector, Input, OnChanges, SimpleChanges, Type, ViewEncapsulation } from '@angular/core';
-import { SingleChoiceComponent } from '../single-choice/single-choice.component';
-import { CommonModule } from '@angular/common';
-import { SurveyQuestion } from '../../pages/auth/survey-edit/survey-edit.component';
-import { MultipleChoiceComponent } from '../multiple-choice/multiple-choice.component';
-import { FormControl, FormGroup } from '@angular/forms';
-import { TextChoiceComponent } from '../text-choice/text-choice.component';
-import {IQuestion} from "../../pages/auth/survey-edit/services/survey-edit.service";
-export const CONFIG_TOKEN = new InjectionToken<any>('config');
+import {Component, Injector, Input, OnChanges, OnInit, SimpleChanges, Type, ViewEncapsulation} from '@angular/core';
+import {IQuestion} from "../../../auth/survey-edit/services/survey-edit.service";
+import {FormControl, FormGroup} from "@angular/forms";
+import {CommonModule} from "@angular/common";
+import {SingleChoiceComponent} from "../../../../components/single-choice/single-choice.component";
+import {MultipleChoiceComponent} from "../../../../components/multiple-choice/multiple-choice.component";
+import {TextChoiceComponent} from "../../../../components/text-choice/text-choice.component";
+import {CONFIG_TOKEN} from "../../../../components/question-host/question-host.component";
+
 @Component({
-  selector: 'question-host',
+  selector: 'question-page',
   imports: [
     CommonModule,
   ],
   standalone: true,
-  templateUrl: './question-host.component.html',
-  styleUrl: './question-host.component.scss',
+  templateUrl: './question-page.component.html',
+  styleUrl: './question-page.component.scss',
   encapsulation: ViewEncapsulation.None,
 })
-export class QuestionHostComponent implements OnChanges {
-  @Input()  question!: IQuestion;
+export class QuestionPageComponent implements OnChanges, OnInit {
+  @Input() question!: IQuestion;
   @Input() form!: FormGroup | null;
 
   component: Type<any> | null = null;
   injector: Injector | undefined = undefined;
   formControl!: FormControl;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges changes', this.form?.controls);
+  ngOnInit() {
+
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
     const componentsMap: Record<string, Type<any>> = {
       singleChoice: SingleChoiceComponent,
       multipleChoice: MultipleChoiceComponent,
       textChoice: TextChoiceComponent,
     }
+
     this.component = componentsMap[this.question.type];
 
     if (this.component) {
       if(this.form) {
-        this.formControl = new FormControl([]);
-        this.form.addControl(this.question.id, this.formControl);
+        if(this.form?.get(this.question.id)) {
+          this.formControl = this.form.get(this.question.id) as FormControl;
+        } else {
+          this.formControl = new FormControl([]);
+          this.form.addControl(this.question.id, this.formControl);
+        }
       }
 
       this.question.config = {
@@ -73,5 +81,4 @@ export class QuestionHostComponent implements OnChanges {
     }
     return '';
   }
-
 }

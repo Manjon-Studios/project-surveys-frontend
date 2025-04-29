@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from "@angular/common/http";
 import {IPlans, IResponsePlansPayload} from "../pages/auth/management/management.component";
-import {BehaviorSubject, map, Observable} from "rxjs";
+import {BehaviorSubject, map, Observable, take, tap} from "rxjs";
 export interface IPlansPayload {
   name?: string;
   max_surveys?: number;
@@ -21,12 +21,10 @@ export class ManagementPlansService {
   updatePlans(planID: string, payload: IPlansPayload) {
     this.http.put<IResponsePlansPayload>(`https://survey-server.albertmanjon.es/plans/${planID}`, payload)
       .pipe(
+        take(1),
         map(response => this.mappingRequestPlans(response)),
-      )
-      .subscribe(
-        (plan) =>
-          this.plansUpdated.next(plan)
-      );
+        tap((plan) => this.plansUpdated.next(plan))
+      ).subscribe();
   }
 
   private mappingRequestPlans(response: IResponsePlansPayload): IPlans {

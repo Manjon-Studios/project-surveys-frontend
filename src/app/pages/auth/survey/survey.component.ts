@@ -56,7 +56,7 @@ export class SurveyComponent implements OnInit {
     this.isOpenModalCreatedSurvey.set(!this.isOpenModalCreatedSurvey());
     this.isLoading.set(true);
 
-    this.httpClient.post('https://survey-server.albertmanjon.es/survey',
+    this.httpClient.post('http://localhost:3004/survey',
       {...this.formCreatedSurvey.value, theme: null})
       .pipe(
         catchError(() => {
@@ -74,7 +74,7 @@ export class SurveyComponent implements OnInit {
 
   getSurveys(): void {
     this.isLoading.set(true);
-    this.httpClient.get<Survey[]>('https://survey-server.albertmanjon.es/survey/all')
+    this.httpClient.get<Survey[]>('http://localhost:3004/survey/all')
       .subscribe((surveys: Survey[]) => {
         this.surveys.set(surveys)
         this.isLoading.set(false);

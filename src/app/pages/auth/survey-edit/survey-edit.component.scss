@@ -1,0 +1,23 @@
+.survey-edit {
+  @apply h-[100dvh] mx-auto;
+
+  &-sidebar {
+    @apply border-t-0 border-b-0 border-l-0 border-r-[1px] border-black border-opacity-10
+    border-solid shadow-lg bg-white;
+
+    &-title {
+      @apply p-4 bg-gray-100 border-b-[1px] border-gray-200;
+      &-heading {
+        @apply text-sm font-bold;
+      }
+    }
+
+    &-wrapper {
+      @apply flex flex-col gap-1 p-2;
+    }
+
+    &-list-pages {
+      @apply flex flex-col gap-1 p-2;
+    }
+  }
+}

@@ -1,19 +1,28 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  signal,
+  WritableSignal
+} from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { QuestionHostComponent } from '../../../components/question-host/question-host.component';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ISingleFormOptions, SingleFormComponent } from '../../../components/dynamic-form/single-form/single-form.component';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { SingleFormComponent } from '../../../components/dynamic-form/single-form/single-form.component';
 import { MultipleFormComponent } from '../../../components/dynamic-form/multiple-form/multiple-form.component';
-import { SurveyEditService } from './services/survey-edit.service';
-import { Observable, Subscription } from 'rxjs';
-import { SurveyEditLayoutComponent } from '../../../ui/layouts/survey-edit-layout/survey-edit-layout.component';
+import { IPage, IPageSteps, SurveyEditService } from './services/survey-edit.service';
+import { catchError, of, Subscription, switchMap, throwError } from 'rxjs';
 import { SurveyEditQuestionSelectedService } from './services/survey-edit-question-selected.service';
 import { TextFormComponent } from '../../../components/dynamic-form/text-form/text-form.component';
+import { TreeComponent } from "../../../components/tree/tree.component";
+import { StepperComponent } from '../../../components/stepper/stepper.component';
 import { TextEditableComponent } from '../../../components/forms/text-editable/text-editable.component';
-import { SingleComponent } from '../../../ui/choice/single/single.component';
-import {TreeComponent} from "../../../components/tree/tree.component";
+import { SelectionEditorComponent } from './components/selection-editor/selection-editor.component';
+
 export interface IHTTPSurveyQuestion {
   questions: SurveyQuestion[];
 }
@@ -41,8 +50,9 @@ export interface SurveyQuestion {
     SingleFormComponent,
     MultipleFormComponent,
     TextFormComponent,
-    QuestionHostComponent,
-    TreeComponent,
+    StepperComponent,
+    TextEditableComponent,
+    SelectionEditorComponent,
   ],
   standalone: true,
   templateUrl: './survey-edit.component.html',
@@ -51,8 +61,10 @@ export interface SurveyQuestion {
 })
 export class SurveyEditComponent implements OnInit, OnDestroy {
 
+  public formGroupCreatedPage!: FormGroup;
   public formGroupCreatedQuestion!: FormGroup;
   public isOpenModal: boolean = false;
+  public isOpenModalCreatedPage: boolean = false;
   public isOpenModalEditQuestion: boolean = false;
   public data!: IHTTPSurveyQuestion;
   public questionSelected!: SurveyQuestion;
@@ -62,6 +74,8 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
   public hoveredId!: string | null;
   public formQuestionHost!: FormGroup;
   public currentPage: number = 0;
+  public pagesSurvey: WritableSignal<IPage[]> = signal<IPage[]>([]);
+  public pageSteps: IPageSteps[] = [];
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +93,10 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
       question: ['', Validators.required],
       description: ['', []],
     });
+    this.formGroupCreatedPage = this.formBuilder.group({
+      title: ['', [Validators.minLength(3)]],
+      description: ['', [Validators.minLength(3)]],
+    });
 
     const id = this.route.snapshot.paramMap.get('id')
 
@@ -88,25 +106,196 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
 
     this.dataSubscription = this.surveyEditService.questionData$
       .subscribe(
-        (data) =>  { this.data = data; console.log(this.data); },
+        (data) => {
+          this.pagesSurvey.set(data);
+          this.pageSteps = this.mapDataStepper(data);
+          console.log(this.pageSteps);
+        },
       );
 
     this.surveyEditQuestionSelectedService.questionSelected$
       .subscribe((data) => {
-      if(data) {
-        this.questionSelected = data.question;
-        console.log(this.data.questions.filter((e) => e._id === data.question._id))
-      }
-    })
+        if (data) {
+          this.questionSelected = data.question;
+          console.log(this.data.questions.filter((e) => e._id === data.question._id))
+        }
+      })
 
-    if(id) {
+    if (id) {
       this.surveyEditService.getQuestions(id);
     }
   }
 
   ngOnDestroy(): void {
-    if(this.dataSubscription) {
+    if (this.dataSubscription) {
       this.dataSubscription.unsubscribe();
+    }
+  }
+
+  /**
+   * Suma la cantidad de preguntas de todas las páginas anteriores
+   *
+   * @param {number} index - Indice de la pregunta.
+   * @returns {number} - Retorna el índice acumulado + el índice actual + 1 (para que empiece en 1).
+   */
+  currentIndex(index: number): number {
+    let count = 0;
+
+    for (let i = 0; i < this.currentPage; i++) {
+      const page = this.pagesSurvey()[i];
+      if (page) {
+        count += page.questions.length;
+      }
+    }
+
+    return count + index;
+  }
+
+  mapDataStepper(pages: IPage[]): IPageSteps[] {
+    return pages.map(({ title, description }) => ({
+      title,
+      description
+    }));
+  }
+
+  onStepSelected(n: number): void {
+    this.currentPage = n;
+  }
+
+  getPage(index: number): IPage {
+    return this.pagesSurvey()[index];
+  }
+
+  onToggleModal(): void {
+    this.isOpenModal = !this.isOpenModal;
+  }
+
+  onToggleModalEditQuestion(): void {
+    this.isOpenModalEditQuestion = !this.isOpenModalEditQuestion;
+  }
+
+  onResetQuestionSelected() {
+    this.questionSelected = {} as SurveyQuestion;
+  }
+
+  onSubmitCreatedQuestion(): void {}
+
+  onToggleModalCreatedPage(): void {
+    this.isOpenModalCreatedPage = !this.isOpenModalCreatedPage;
+  }
+
+  onSubmitCreatedPage(event: Event): void {}
+
+}
+
+export interface IPageCreated {
+  surveyId: string;
+  title: string;
+  description?: string;
+  order: number;
+}
+
+/**
+ *
+ *
+  onSubmitCreatedQuestion(): void {
+
+    if(this.formGroupCreatedQuestion.valid) {
+      const descriptionValue = this.formGroupCreatedQuestion.get('description')?.value;
+      const typeValue = this.formGroupCreatedQuestion.get('type')?.value;
+      console.log(this.formGroupCreatedQuestion.get('description')?.value)
+
+      let newQuestion = {
+        ...this.formGroupCreatedQuestion.value,
+        surveyId: this.id,
+        order: this.getPage(this.currentPage).questions.length,
+        isRequired: this.getPage(this.currentPage).questions.length % 2 === 0 ? true : false,
+        config: {},
+      };
+
+      if(typeValue === 'singleChoice' || typeValue === 'multipleChoice') {
+        newQuestion = {
+          ...newQuestion,
+          config: {
+            options: [
+              { label: 'Hello Guys', value: 'hello' },
+              { label: 'God Bye', value: 'godbye' }
+            ]
+          }
+        }
+      }
+
+      if(typeValue === 'textChoice') {
+        newQuestion = {
+          ...newQuestion,
+          config: {
+            maxLength: 255,
+          }
+        }
+      }
+
+      if (!descriptionValue?.trim()) {
+        delete newQuestion['description'];
+      }
+
+
+      // @ts-ignore
+      // @ts-ignore
+      this.httpClient.post<SurveyQuestion>(
+          'http://localhost:3004/questions',
+          {
+            ...newQuestion
+          }
+        ).pipe(
+         catchError(error => {
+           console.error('Error en la primera llamada:', error);
+           alert('Hubo un error al guardar la pregunta. Inténtalo de nuevo.');
+           return throwError(() => error);
+         }),
+         switchMap((response: SurveyQuestion) => {
+           //this.data.questions.push(response);
+           this.formGroupCreatedQuestion.reset();
+           this.onToggleModal();
+
+           return this.httpClient.post<any>('http://localhost:3004/pages/question',
+             {pageId: this.getPage(this.currentPage).id, questionId: response._id})
+             .pipe(
+               catchError((error) => {
+                 console.error('Error en la segunda llamada:', error);
+                 alert('La pregunta se guardó, pero hubo un error al actualizar los datos.');
+                 return of(null);
+               })
+             );
+         }),
+        ).subscribe({
+          next: (response: SurveyQuestion) => {
+            if(response) {
+              console.log('OK', response);
+            }
+          },
+          error: (err) => console.error('Error inesperado:', err),
+          complete: () => {
+            console.log('COMPLETE');
+          }
+        });
+    }
+  }
+
+  onSubmitCreatedPage(event: Event): void {
+    event.preventDefault();
+
+    if(this.formGroupCreatedPage.valid) {
+      const payload: Partial<IPageCreated> = {
+        ...this.formGroupCreatedPage.value,
+        surveyId: this.id,
+        order: this.pagesSurvey().length,
+      }
+
+      this.httpClient.post<any>('http://localhost:3004/pages', payload)
+          .subscribe((response) => {
+            console.log('Response server', response);
+          })
+      console.log(payload)
     }
   }
 
@@ -164,13 +353,15 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
     this.isOpenModal = !this.isOpenModal;
   }
 
-  onToggleModalEditQuestion(): void {
-    this.isOpenModalEditQuestion = !this.isOpenModalEditQuestion;
+  onToggleModalCreatedPage(): void {
+    this.isOpenModalCreatedPage = !this.isOpenModalCreatedPage;
   }
 
-  onResetQuestionSelected() {
-    this.questionSelected = {} as SurveyQuestion;
+  onSelectedPage(index: number): void {
+    this.currentPage = index;
   }
+
+
 
   onSelectedQuestion(question: SurveyQuestion): void {
     this.questionSelected = question;
@@ -222,62 +413,4 @@ export class SurveyEditComponent implements OnInit, OnDestroy {
     const errors = this.formGroupCreatedQuestion.get(field)?.errors;
     return errors ? !!errors[value] : false;
   }
-
-  onSubmitCreatedQuestion(): void {
-
-    if(this.formGroupCreatedQuestion.valid) {
-      const descriptionValue = this.formGroupCreatedQuestion.get('description')?.value;
-      const typeValue = this.formGroupCreatedQuestion.get('type')?.value;
-      console.log(this.formGroupCreatedQuestion.get('description')?.value)
-
-      let newQuestion = {
-        ...this.formGroupCreatedQuestion.value,
-        surveyId: this.id,
-        order: this.data.questions.length,
-        isRequired: this.data.questions.length % 2 === 0 ? true : false,
-        config: {},
-      };
-
-      if(typeValue === 'singleChoice' || typeValue === 'multipleChoice') {
-        newQuestion = {
-          ...newQuestion,
-          config: {
-            options: [
-              { label: 'Hello Guys', value: 'hello' },
-              { label: 'God Bye', value: 'godbye' }
-            ]
-          }
-        }
-      }
-
-      if(typeValue === 'textChoice') {
-        newQuestion = {
-          ...newQuestion,
-          config: {
-            maxLength: 255,
-          }
-        }
-      }
-
-      if (!descriptionValue?.trim()) {
-        delete newQuestion['description'];
-      }
-
-
-      this.httpClient.post<SurveyQuestion>(
-          'https://survey-server.albertmanjon.es/questions',
-          {
-            ...newQuestion
-          }
-        ).subscribe(
-          (response: SurveyQuestion) => {
-            this.data.questions.push(response);
-            this.formGroupCreatedQuestion.reset();
-            this.onToggleModal();
-          });
-      console.log({
-        newQuestion: newQuestion,
-      });
-    }
-  }
-}
+ */

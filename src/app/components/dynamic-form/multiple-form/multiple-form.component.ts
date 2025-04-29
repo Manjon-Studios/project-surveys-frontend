@@ -4,7 +4,7 @@ import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, Reacti
 import { SurveyEditLayoutComponent } from '../../../ui/layouts/survey-edit-layout/survey-edit-layout.component';
 import { ISirveyQuestion, SurveyEditQuestionSelectedService } from '../../../pages/auth/survey-edit/services/survey-edit-question-selected.service';
 import { SurveyQuestion } from '../../../pages/auth/survey-edit/survey-edit.component';
-import { catchError, map, of, Subscription } from 'rxjs';
+import { catchError, from, map, of, Subscription } from 'rxjs';
 import { MinMaxComponent } from '../../forms/min-max/min-max.component';
 import { ISingleFormOptions } from '../single-form/single-form.component';
 import { KeyValueListComponent } from "../../forms/key-value-list/key-value-list.component";
@@ -70,7 +70,7 @@ export class MultipleFormComponent implements OnInit, OnChanges, OnDestroy {
     this.fomrMultipleSubscription = this.surveyEditQuestionSelectedService.questionSelected$
       .pipe(
         map((data: any) => data ?? ({} as ISirveyQuestion)),
-        catchError(() => of({} as ISirveyQuestion))
+        catchError(() => of({} as ISirveyQuestion)),
       )
       .subscribe(({ question, survey_id }: ISirveyQuestion) => {
         if (question && survey_id) {

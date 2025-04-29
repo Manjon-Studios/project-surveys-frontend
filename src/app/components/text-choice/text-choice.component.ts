@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, forwardRef, Inject, inject, OnInit, ViewEncapsulation } from '@angular/core';
 import { CONFIG_TOKEN } from '../question-host/question-host.component';
-import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import {ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule, Validators} from '@angular/forms';
 import { MultipleChoiceComponent } from '../multiple-choice/multiple-choice.component';
 
 export interface ITextChoiceConfiguration {
@@ -14,6 +14,7 @@ export interface ITextChoiceConfiguration {
   selector: 'text-choice',
   imports: [
     CommonModule,
+    ReactiveFormsModule,
   ],
   standalone: true,
   templateUrl: './text-choice.component.html',
@@ -43,12 +44,20 @@ export class TextChoiceComponent implements OnInit, ControlValueAccessor {
     this.configuration = this._config as ITextChoiceConfiguration;
     if (this.injectedFormControl) {
       this.formControl = this.injectedFormControl;
+      if (this.formControl.value) {
+        this.value = this.formControl.value;
+      }
       this.applyValidations();
     }
   }
 
   writeValue(value: string): void {
+    console.log('Text Choice writeValue', value);
+
     this.value = value || '';
+    if (this.formControl) {
+      this.formControl.setValue(value, { emitEvent: false });
+    }
   }
 
   registerOnChange(fn: (value: string) => void): void {
@@ -60,12 +69,13 @@ export class TextChoiceComponent implements OnInit, ControlValueAccessor {
   }
 
   onInput(event: Event): void {
-    const { value } = event.target as HTMLInputElement;
+    const { value } = <HTMLInputElement>event.target;
     this.value = value;
     this.formControl.setValue(this.value.trim());
     this.formControl.markAsTouched();
     this.formControl.updateValueAndValidity();
     this.onChange(this.value.trim());
+    console.log('Text Choice onInput', this.formControl.invalid);
   }
 
   private applyValidations(): void {

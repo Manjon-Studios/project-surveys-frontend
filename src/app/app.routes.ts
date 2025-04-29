@@ -10,7 +10,7 @@ import {HomeComponent} from "./pages/home/home.component";
 
 // @ts-ignore
 export const routes: Routes = [
-  { path: '/', component: HomeComponent },
+  { path: '', component: HomeComponent },
   { path: 'survey/view/:id', component: ViewSurveyComponent },
   { path: 'survey/all', component: SurveyComponent },
   { path: 'survey/edit/:id', component: SurveyEditComponent },

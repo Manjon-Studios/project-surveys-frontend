@@ -1,6 +1,6 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import {BehaviorSubject, catchError, Observable, of, Subject, takeUntil} from "rxjs";
+import {BehaviorSubject, catchError, map, Observable, of, Subject, takeUntil} from "rxjs";
 import { IMultipleChoiceQuestion } from "../../../../components/dynamic-form/multiple-form/multiple-form.component";
 import { IQuestionReorder } from "../survey-edit.component";
 import {
@@ -37,8 +37,8 @@ export class SurveyEditService {
 
   private unsubscribe$ = new Subject<void>();
 
-  private questionData: BehaviorSubject<IHTTPSurveyQuestion> = new BehaviorSubject<IHTTPSurveyQuestion>({ questions: [] });
-  public questionData$: Observable<IHTTPSurveyQuestion> = this.questionData.asObservable();
+  private questionData: BehaviorSubject<IPage[]> = new BehaviorSubject<IPage[]>([]);
+  public questionData$: Observable<IPage[]> = this.questionData.asObservable();
 
   private themeData: BehaviorSubject<ISurveyThemeGlobal> = new BehaviorSubject<ISurveyThemeGlobal>(defaultTheme)
   public themeData$: Observable<ISurveyThemeGlobal> = this.themeData.asObservable();
@@ -49,13 +49,15 @@ export class SurveyEditService {
 
   getQuestions(id: string) {
     this._httpClient
-      .get<IHTTPSurveyQuestion>(`https://survey-server.albertmanjon.es/questions/find-survey-questions/${id}`)
+      .get<Pages[]>(`http://localhost:3004/pages/find/${id}`)
       .pipe(
+        map((pages) => pages.map(
+          (page) => this.mappingResponsePages(page)
+        )),
         takeUntil(this.unsubscribe$),
-        catchError(() => of({ questions: [] }))
+        catchError(() => of([] as IPage[]))
       )
-      .subscribe(
-        (questions: IHTTPSurveyQuestion) => {
+      .subscribe((questions) => {
           this.questionData.next(questions);
       });
   }
@@ -64,6 +66,7 @@ export class SurveyEditService {
     this._httpClient
       .post<IResponseSurveyThemeGlobal>(`https://survey-server.albertmanjon.es/survey/update-theme/${id}`, { theme })
       .pipe(
+
         takeUntil(this.unsubscribe$),
         catchError(() => of(defaultTheme))
       )
@@ -95,4 +98,65 @@ export class SurveyEditService {
       console.log(a)
     });
   }
+
+  mappingResponsePages(page: Pages): IPage {
+    return {
+      id: page._id,
+      title: page.title,
+      description: page?.description,
+      order: page.order,
+      questions: page.questions.map((question: Question) => {
+        return {
+          id: question._id,
+          question: question.question,
+          description: question?.description || null,
+          type: question.type,
+          order: question.order,
+          isRequired: question.isRequired,
+          config: question.config,
+        } as IQuestion;
+      }),
+    }
+  }
+}
+
+export interface Question {
+  _id: string;
+   type: string;
+  question: string;
+  description?: string;
+  order: number;
+  isRequired: boolean;
+  config: Record<string, any>;
+}
+
+export interface Pages {
+  _id: string;
+  title: string;
+  description?: string;
+  order: number;
+  questions: Question[];
+}
+
+export interface IPage {
+  id: string;
+  title: string;
+  description?: string;
+  order: number;
+  questions: IQuestion[];
+}
+
+export interface IPageSteps {
+  title: string;
+  description?: string;
+}
+
+export interface IQuestion {
+  id: string;
+  type: string;
+  question: string;
+  description?: string;
+  order: number;
+  isRequired: boolean;
+  config: Record<string, any>;
 }

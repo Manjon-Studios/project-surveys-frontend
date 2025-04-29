@@ -1,0 +1,15 @@
+<div #stepper class="stepper">
+  <div class="stepper-line">
+    @for (step of steps; track $index; let i = $index; let first = $first) {
+      <div
+      tabindex="0"
+        class="stepper-line-item"
+        [class.stepper-line--actived]="inRangeIndex(i)"
+        (click)="setCurrentIndex(i)"></div>
+    }
+  </div>
+  <div *ngIf="steps.length > 0 && steps[currentIndex]" class="stepper-content">
+    <p class="stepper-title">{{ getTitle() }}</p>
+    <p *ngIf="isExistDescription()" class="stepper-description">{{ getDescription() }}</p>
+  </div>
+</div>
